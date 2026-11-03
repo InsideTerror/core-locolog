@@ -3,171 +3,263 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>locolog</title>
-<meta name="theme-color" content="#0f1720">
+<title>locolog — C.O.R.E.</title>
+<meta name="theme-color" content="#16161a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="locolog">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="icon" href="icon-192.png">
+<link rel="icon" href="mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Zilla+Slab:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" crossorigin>
 <style>
+/* C.O.R.E. design tokens (from corerail.dpdns.org) */
 :root{
-  --bg:#0f1720; --panel:#17212c; --panel2:#1e2a37; --line:#2a3846;
-  --text:#e8edf2; --muted:#8b9aab; --accent:#2f80ed; --accent2:#f2b134;
-  --ok:#3ecf8e; --danger:#e5484d;
-  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --charcoal:#16161a; --slate:#201f22; --slate-2:#2a2930; --hairline:#3c3a3f;
+  --oxide:#7c3626; --oxide-dim:#5c2a1f; --ember:#c1502f; --ember-hi:#e06a3e;
+  --brass:#a9812f; --brass-hi:#cfa646; --paper:#ece6d8; --paper-dim:#b9b3a5;
+  --steel:#8b8b8d; --ok:#6f8f5c;
+  --f-display:'Oswald','Arial Narrow',sans-serif;
+  --f-body:'Zilla Slab',Georgia,serif;
+  --f-mono:'IBM Plex Mono','Courier New',monospace;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);
-  font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-body{padding:env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom))}
-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 6px}
-header h1{margin:0;font-size:22px;letter-spacing:.5px}
-header h1 span{color:var(--accent2)}
-#offline{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
-main{padding:0 16px}
+html,body{margin:0;background:var(--charcoal);color:var(--paper);font-family:var(--f-body);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{padding:0 0 calc(70px + env(safe-area-inset-bottom))}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:radial-gradient(circle at 20% 20%,rgba(255,255,255,.025),transparent 40%),
+  radial-gradient(circle at 80% 60%,rgba(255,255,255,.02),transparent 45%),
+  repeating-linear-gradient(115deg,rgba(255,255,255,.012) 0 2px,transparent 2px 6px)}
+main,header{position:relative;z-index:1}
+
+/* nav bar */
+header{position:sticky;top:0;z-index:20;background:rgba(22,22,26,.92);backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);border-bottom:1px solid var(--hairline);padding-top:env(safe-area-inset-top)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:62px;padding:0 18px}
+.brand{display:flex;align-items:center;gap:11px}
+.brand img{width:34px;height:34px}
+.brand-text{font-family:var(--f-display);font-weight:700;letter-spacing:.16em;font-size:1.12rem;text-transform:uppercase;line-height:1.1}
+.brand-text span{color:var(--ember-hi)}
+.brand-sub{display:block;font-family:var(--f-mono);font-size:.58rem;letter-spacing:.1em;color:var(--steel);text-transform:uppercase}
+.live{font-family:var(--f-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ember-hi);display:flex;align-items:center;gap:7px}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 1.8s infinite}
+.live.off{color:var(--steel)}.live.off::before{animation:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(193,80,47,.55)}70%{box-shadow:0 0 0 8px rgba(193,80,47,0)}100%{box-shadow:0 0 0 0 rgba(193,80,47,0)}}
+
+main{padding:4px 16px 10px}
 .view{display:none}.view.on{display:block}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
-h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 2px 6px}
-label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
-input,textarea{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);
-  border-radius:10px;padding:11px 12px;font:inherit;outline:none}
-input:focus,textarea:focus{border-color:var(--accent)}
-textarea{min-height:64px;resize:vertical}
-#num{font:600 30px/1.2 var(--mono);letter-spacing:3px;text-align:center;padding:14px}
-.row{display:flex;gap:8px;align-items:center}
-.row>*{flex:1}
-button{font:inherit;border:0;border-radius:10px;padding:11px 14px;background:var(--panel2);
-  color:var(--text);border:1px solid var(--line)}
-button.primary{background:var(--accent);border-color:var(--accent);font-weight:600}
-button.danger{background:transparent;color:var(--danger);border-color:var(--danger)}
-button.small{padding:7px 10px;font-size:14px}
-button:disabled{opacity:.45}
-.typehint{min-height:22px;text-align:center;margin-top:8px;font-size:15px}
-.typehint .t{color:var(--accent2);font-weight:600}
-.typehint .u{color:var(--muted)}
-.muted{color:var(--muted);font-size:13px}
-.entry{display:flex;gap:12px;padding:11px 2px;border-bottom:1px solid var(--line);align-items:flex-start}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin:0 0 .4em;color:var(--paper)}
+h1{font-size:1.9rem;line-height:1.05;font-weight:700}
+.eyebrow{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--brass-hi);
+  display:flex;align-items:center;gap:.6em;margin:22px 0 10px}
+.eyebrow::before{content:"";width:22px;height:2px;background:var(--brass-hi)}
+p{margin:0 0 1em;color:var(--paper-dim)}
+
+.card{background:var(--slate);border:1px solid var(--hairline);border-radius:3px;padding:18px}
+.board{background:var(--slate-2);border:1px solid var(--hairline);border-radius:4px;padding:16px 16px 18px}
+.board-head{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:.64rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--steel);padding-bottom:12px;margin-bottom:14px;border-bottom:1px dashed var(--hairline)}
+
+label{display:block;font-family:var(--f-mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin:14px 0 6px}
+input,textarea{width:100%;background:var(--charcoal);border:1px solid var(--hairline);color:var(--paper);padding:12px 13px;
+  border-radius:2px;font-family:var(--f-body);font-size:1rem;outline:none;-webkit-appearance:none}
+input:focus,textarea:focus{border-color:var(--brass-hi)}
+input::placeholder,textarea::placeholder{color:#6d6a68}
+textarea{min-height:70px;resize:vertical}
+input[type=file]{padding:10px;font-family:var(--f-mono);font-size:.8rem}
+/* split-flap number entry */
+#num{font:600 2rem/1.1 var(--f-mono);letter-spacing:.18em;text-align:center;padding:16px 8px;color:var(--paper);
+  background:var(--charcoal);border-radius:2px}
+.hint{min-height:46px;text-align:center;margin-top:12px;font-family:var(--f-mono);font-size:.8rem;letter-spacing:.04em}
+.hint .t{font-family:var(--f-display);font-size:1.15rem;letter-spacing:.06em;text-transform:uppercase;color:var(--brass-hi)}
+.hint .u{color:var(--steel)}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:var(--f-display);font-size:.86rem;
+  letter-spacing:.08em;text-transform:uppercase;padding:13px 22px;border-radius:2px;border:1px solid var(--ember);
+  background:var(--oxide);color:var(--paper);cursor:pointer;transition:background .15s}
+.btn:active{background:var(--ember)}
+.btn:disabled{opacity:.45}
+.btn.ghost{background:transparent;border-color:var(--hairline)}
+.btn.ghost:active{border-color:var(--brass-hi);color:var(--brass-hi)}
+.btn.danger{background:transparent;border-color:var(--ember);color:var(--ember-hi)}
+.btn.sm{padding:9px 13px;font-size:.76rem}
+.btn.block{width:100%}
+.muted{color:var(--steel);font-family:var(--f-mono);font-size:.72rem;letter-spacing:.03em}
+
+.tag{display:inline-block;font-family:var(--f-mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;
+  border:1px solid var(--hairline);border-radius:2px;color:var(--brass-hi);vertical-align:middle;margin-left:6px}
+.tag.ember{border-color:var(--ember);color:var(--ember-hi)}
+.tag.ok{border-color:var(--ok);color:#93b37f}
+
+/* log list */
+.entry{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;padding:12px 0;border-bottom:1px solid var(--hairline);cursor:pointer}
 .entry:last-child{border-bottom:0}
-.entry .n{font:600 18px var(--mono);letter-spacing:1px;white-space:nowrap}
-.entry .meta{flex:1;min-width:0}
-.entry .meta div{overflow:hidden;text-overflow:ellipsis}
-.badge{display:inline-block;font-size:12px;padding:1px 7px;border-radius:999px;background:var(--panel2);
-  border:1px solid var(--line);color:var(--muted);margin-left:4px}
-.badge.rep{color:var(--accent2);border-color:var(--accent2)}
-.stat{display:flex;justify-content:space-between;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line)}
-.stat:last-child{border-bottom:0}
-.stat .big{font:600 20px var(--mono)}
-.totals{display:flex;gap:8px}
-.totals .card{flex:1;text-align:center;margin:6px 0}
-.totals .card b{display:block;font:600 26px var(--mono)}
-.units{display:flex;flex-wrap:wrap;gap:6px;padding:4px 2px 12px}
-.unit{font:14px var(--mono);padding:4px 8px;border-radius:8px;background:var(--panel2);border:1px solid var(--line)}
-.unit.rep{border-color:var(--accent2);color:var(--accent2)}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:rgba(15,23,32,.96);
-  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);backdrop-filter:blur(8px)}
-nav button{flex:1;background:none;border:0;border-radius:0;color:var(--muted);padding:12px 0 14px;font-size:13px}
-nav button.on{color:var(--text)}
-nav button svg{display:block;margin:0 auto 3px;width:22px;height:22px}
-#toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%);
-  background:var(--ok);color:#06210f;font-weight:600;padding:9px 16px;border-radius:999px;opacity:0;
-  transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.flap{font:600 1rem var(--f-mono);letter-spacing:.06em;background:var(--charcoal);border:1px solid var(--hairline);border-radius:2px;
+  padding:5px 8px;white-space:nowrap;align-self:start}
+.entry .ttl{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.04em;font-size:.98rem}
+.entry .sub{font-family:var(--f-mono);font-size:.7rem;color:var(--steel);margin-top:2px}
+.entry .note{font-size:.92rem;color:var(--paper-dim);margin-top:3px;white-space:pre-line}
+.empty{text-align:center;color:var(--steel);font-family:var(--f-mono);font-size:.78rem;padding:24px 0}
+
+/* stats strip */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--hairline);border-radius:3px;background:var(--slate)}
+.stat{padding:16px 12px;border-right:1px solid var(--hairline)}
+.stat:last-child{border-right:0}
+.stat b{display:block;font-family:var(--f-display);font-size:1.9rem;color:var(--ember-hi);font-weight:700;line-height:1.1}
+.stat span{font-family:var(--f-mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--steel)}
+
+/* accordion */
+.accordion{border-top:1px solid var(--hairline)}
+.accordion details{border-bottom:1px solid var(--hairline)}
+.accordion summary{cursor:pointer;list-style:none;padding:14px 2px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+.accordion summary::-webkit-details-marker{display:none}
+.accordion summary::after{content:"+";font-family:var(--f-mono);font-size:1.3rem;color:var(--ember-hi);transition:transform .2s;flex-shrink:0}
+.accordion details[open] summary::after{transform:rotate(45deg)}
+.accordion .nm{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.04em;font-size:1rem}
+.accordion .cls{font-family:var(--f-mono);font-size:.66rem;color:var(--steel);letter-spacing:.06em;text-transform:uppercase}
+.accordion .ct{margin-left:auto;font-family:var(--f-display);font-weight:700;font-size:1.35rem;color:var(--ember-hi);white-space:nowrap}
+.accordion .ct small{font-family:var(--f-mono);font-size:.68rem;color:var(--steel);font-weight:400}
+.meter{height:3px;background:var(--hairline);margin-top:7px;border-radius:2px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--ember-hi)}
+.panel{padding:0 2px 16px}
+.specs{list-style:none;margin:0 0 12px;padding:0;font-family:var(--f-mono);font-size:.74rem;color:var(--paper-dim)}
+.specs li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px dashed var(--hairline)}
+.specs li span:first-child{color:var(--steel);text-transform:uppercase;letter-spacing:.06em;flex-shrink:0}
+.specs li span:last-child{text-align:right}
+.units{display:flex;flex-wrap:wrap;gap:6px}
+.unit{font:500 .8rem var(--f-mono);padding:4px 8px;border-radius:2px;background:var(--charcoal);border:1px solid var(--hairline)}
+.unit.rep{border-color:var(--brass);color:var(--brass-hi)}
+
+.rep-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--hairline)}
+.rep-row:last-child{border-bottom:0}
+.rep-row .x{font-family:var(--f-display);font-weight:700;font-size:1.5rem;color:var(--brass-hi)}
+
+.cls-row{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--hairline)}
+.cls-row:last-child{border-bottom:0}
+.cls-row .p{font:600 .9rem var(--f-mono);min-width:58px;color:var(--brass-hi)}
+.cls-row .n{flex:1;min-width:0;font-size:.95rem}
+.cls-row .n small{display:block;font-family:var(--f-mono);font-size:.66rem;color:var(--steel)}
+
+/* bottom tabs */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;background:rgba(22,22,26,.96);border-top:1px solid var(--hairline);
+  padding-bottom:env(safe-area-inset-bottom);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+nav button{flex:1;background:none;border:0;border-top:2px solid transparent;color:var(--paper-dim);padding:10px 0 11px;
+  font-family:var(--f-display);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-top:-1px}
+nav button.on{color:var(--ember-hi);border-top-color:var(--ember-hi)}
+nav button svg{display:block;margin:0 auto 4px;width:21px;height:21px}
+
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;
+  background:var(--slate-2);border:1px solid var(--ok);color:#a9c795;font-family:var(--f-mono);font-size:.78rem;letter-spacing:.05em;
+  padding:10px 16px;border-radius:2px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+#toast.bad{border-color:var(--ember);color:var(--ember-hi)}
 #toast.show{opacity:1}
-.sheet{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;z-index:10}
+
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;z-index:40}
 .sheet.on{display:flex}
-.sheet .box{background:var(--panel);width:100%;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));
-  max-height:90vh;overflow:auto}
-.sheet h3{margin:0 0 6px}
-.typerow{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
-.typerow .p{font:600 16px var(--mono);width:56px}
-.typerow .nm{flex:1}
-details summary{list-style:none;cursor:pointer}
-details summary::-webkit-details-marker{display:none}
-.empty{text-align:center;color:var(--muted);padding:26px 0}
+.sheet .box{background:var(--slate);border-top:1px solid var(--ember);width:100%;padding:18px 16px calc(18px + env(safe-area-inset-bottom));
+  max-height:92vh;overflow:auto}
 </style>
 </head>
 <body>
 <header>
-  <h1>loco<span>log</span></h1>
-  <span id="offline">offline ready</span>
+  <div class="bar">
+    <div class="brand">
+      <img src="mark.png" alt="C.O.R.E. mark">
+      <span><span class="brand-text">Loco<span>log</span></span><span class="brand-sub">C.O.R.E. · Spotter's Log</span></span>
+    </div>
+    <span class="live off" id="status">Checking</span>
+  </div>
 </header>
 
 <main>
 <!-- LOG -->
 <section class="view on" id="v-log">
-  <form class="card" id="addForm" autocomplete="off">
-    <input id="num" inputmode="numeric" pattern="[0-9 ]*" maxlength="11" placeholder="431 202" aria-label="Locomotive number">
-    <div class="typehint" id="hint">&nbsp;</div>
+  <div class="eyebrow">New Sighting</div>
+  <form class="board" id="addForm" autocomplete="off">
+    <div class="board-head"><span>Unit Number</span><span id="clock"></span></div>
+    <input id="num" inputmode="numeric" pattern="[0-9 ]*" maxlength="9" placeholder="431 202" aria-label="Locomotive number">
+    <div class="hint" id="hint"></div>
+    <label for="route">Train / Route</label>
+    <input id="route" list="routeList" placeholder="e.g. 19707 KÉK HULLÁM IC">
+    <datalist id="routeList"></datalist>
     <label for="loc">Location</label>
     <div class="row">
-      <input id="loc" placeholder="e.g. Budapest-Keleti">
-      <button type="button" id="gpsBtn" class="small" style="flex:0 0 auto">📍 GPS</button>
+      <input id="loc" placeholder="e.g. Budapest-Kelenföld">
+      <button type="button" id="gpsBtn" class="btn ghost sm" style="flex:0 0 auto">GPS</button>
     </div>
-    <div class="muted" id="gpsInfo"></div>
+    <div class="muted" id="gpsInfo" style="margin-top:6px"></div>
     <label for="note">Notes</label>
-    <textarea id="note" placeholder="Train, livery, consist…"></textarea>
-    <div class="muted" style="margin:8px 0 10px">Time is recorded automatically when you save.</div>
-    <button class="primary" id="saveBtn" style="width:100%" disabled>Log it</button>
+    <textarea id="note" placeholder="Livery, consist, anything else…"></textarea>
+    <div class="muted" style="margin:10px 0 14px">Timestamp is recorded automatically.</div>
+    <button class="btn block" id="saveBtn" disabled>Log Sighting</button>
   </form>
-  <div class="row" style="margin-top:4px">
-    <input id="search" placeholder="Search number, place, note…">
-  </div>
-  <h2 id="logTitle">Recent</h2>
-  <div class="card" id="logList"></div>
+
+  <div class="eyebrow" id="logTitle">Recent</div>
+  <input id="search" placeholder="Search number, class, place, train…" style="margin-bottom:10px">
+  <div class="card" id="logList" style="padding:4px 16px"></div>
 </section>
 
 <!-- STATS -->
 <section class="view" id="v-stats">
-  <div class="totals">
-    <div class="card"><b id="tSight">0</b><span class="muted">sightings</span></div>
-    <div class="card"><b id="tUnits">0</b><span class="muted">units</span></div>
-    <div class="card"><b id="tTypes">0</b><span class="muted">types</span></div>
+  <div class="eyebrow">Tally</div>
+  <div class="stats">
+    <div class="stat"><b id="tSight">0</b><span>Sightings</span></div>
+    <div class="stat"><b id="tUnits">0</b><span>Units</span></div>
+    <div class="stat"><b id="tTypes">0</b><span>Classes</span></div>
   </div>
-  <h2>By type</h2>
-  <div class="card" id="byType"></div>
-  <h2>Seen more than once</h2>
-  <div class="card" id="repeats"></div>
+  <div class="eyebrow">By Class</div>
+  <div class="accordion" id="byType"></div>
+  <div class="eyebrow">Seen More Than Once</div>
+  <div class="card" id="repeats" style="padding:4px 16px"></div>
 </section>
 
-<!-- TYPES -->
+<!-- CLASSES -->
 <section class="view" id="v-types">
-  <h2>Number prefixes</h2>
-  <div class="muted" style="margin:0 2px">The first digits of a number decide its type. Longer prefixes win, so you can add 4-digit ones (e.g. 1116) for 7–8 digit numbers.</div>
-  <div class="card" id="typeList"></div>
-  <form class="card" id="typeForm" autocomplete="off">
+  <div class="eyebrow">Class Register</div>
+  <p style="font-size:.95rem">The leading digits of a number pick its class. Longer prefixes win, so a 4–6 digit prefix can single out a sub-series or one unit.</p>
+  <form class="board" id="typeForm" autocomplete="off">
+    <div class="board-head"><span>Add / Update Class</span></div>
     <div class="row">
-      <input id="tPrefix" inputmode="numeric" maxlength="4" placeholder="Prefix" style="flex:0 0 96px;font-family:var(--mono)">
-      <input id="tName" placeholder="Type name">
+      <input id="tPrefix" inputmode="numeric" maxlength="8" placeholder="Prefix" style="flex:0 0 100px;font-family:var(--f-mono)">
+      <input id="tName" placeholder="Name, e.g. V43">
     </div>
-    <button class="primary" style="width:100%;margin-top:10px">Add / update type</button>
+    <div class="row" style="margin-top:8px">
+      <input id="tNick" placeholder="Nickname, e.g. Szili">
+      <input id="tCount" inputmode="numeric" placeholder="Fleet size" style="flex:0 0 110px">
+    </div>
+    <button class="btn block" style="margin-top:12px">Save Class</button>
   </form>
-  <button class="small" id="resetTypes">Restore built-in list</button>
+  <div class="card" id="typeList" style="padding:4px 16px;margin-top:14px"></div>
+  <button class="btn ghost sm" id="resetTypes" style="margin-top:12px">Restore built-in classes</button>
 </section>
 
 <!-- BACKUP -->
 <section class="view" id="v-more">
-  <h2>Backup</h2>
+  <div class="eyebrow">Backup</div>
   <div class="card">
-    <p style="margin-top:0">Your log lives only on this phone. Export a backup now and then, and after big trips.</p>
-    <button class="primary" id="exportBtn" style="width:100%">Export backup</button>
-    <label for="importFile" style="margin-top:14px">Restore from a backup file</label>
+    <p style="margin-top:0">Your log lives only on this phone. Export a backup now and then.</p>
+    <button class="btn block" id="exportBtn">Export Backup</button>
+    <label for="importFile">Import a backup</label>
     <input type="file" id="importFile" accept="application/json,.json">
-    <div class="muted" id="lastBackup" style="margin-top:8px"></div>
+    <div class="muted" style="margin-top:8px">Accepts locolog backups and the older <i>loco-log-backup.json</i> format. Importing again won't create duplicates.</div>
+    <div class="muted" id="lastBackup" style="margin-top:10px"></div>
   </div>
-  <h2>Storage</h2>
-  <div class="card muted" id="storageInfo">Checking…</div>
-  <h2>Danger zone</h2>
-  <div class="card"><button class="danger" id="wipeBtn" style="width:100%">Delete all sightings</button></div>
-  <p class="muted" style="text-align:center">locolog v1</p>
+  <div class="eyebrow">Status</div>
+  <div class="card muted" id="storageInfo" style="line-height:1.8">Checking…</div>
+  <div class="eyebrow">Danger Zone</div>
+  <div class="card"><button class="btn danger block" id="wipeBtn">Delete all sightings</button></div>
+  <p class="muted" style="text-align:center;margin-top:18px">locolog v2 · C.O.R.E. Railway Engineering</p>
 </section>
 </main>
 
 <nav>
   <button data-v="log" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Log</button>
-  <button data-v="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Stats</button>
-  <button data-v="types"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M8 21l2-4M16 21l-2-4M4 11h16"/></svg>Types</button>
+  <button data-v="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Tally</button>
+  <button data-v="types"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M8 21l2-4M16 21l-2-4M4 11h16"/></svg>Classes</button>
   <button data-v="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Backup</button>
 </nav>
 
@@ -175,15 +267,17 @@ details summary::-webkit-details-marker{display:none}
 
 <div class="sheet" id="editSheet">
   <form class="box" id="editForm" autocomplete="off">
-    <h3>Edit sighting</h3>
-    <label>Number</label><input id="eNum" inputmode="numeric" style="font-family:var(--mono)">
+    <div class="eyebrow" style="margin-top:0">Edit Sighting</div>
+    <label>Number</label><input id="eNum" inputmode="numeric" style="font-family:var(--f-mono)">
     <label>Time</label><input id="eTime" type="datetime-local">
+    <label>Train / Route</label><input id="eRoute" list="routeList">
     <label>Location</label><input id="eLoc">
     <label>Notes</label><textarea id="eNote"></textarea>
-    <div class="row" style="margin-top:14px">
-      <button type="button" class="danger" id="eDel">Delete</button>
-      <button type="button" id="eCancel">Cancel</button>
-      <button class="primary">Save</button>
+    <label>Unit nickname (applies to every sighting of this unit)</label><input id="eNick">
+    <div class="row" style="margin-top:16px">
+      <button type="button" class="btn danger sm" id="eDel">Delete</button>
+      <button type="button" class="btn ghost sm" id="eCancel">Cancel</button>
+      <button class="btn sm">Save</button>
     </div>
   </form>
 </div>
@@ -191,37 +285,43 @@ details summary::-webkit-details-marker{display:none}
 <script>
 (function(){
 "use strict";
-const DEFAULT_TYPES = {
-  "117":"Bzmot “Bézé” railcar",
-  "415":"Stadler FLIRT",
-  "416":"Uzsgyi DMU",
-  "418":"M41 “Csörgő”",
-  "426":"Siemens Desiro",
-  "431":"V43 “Szili”",
-  "432":"V43 “Szili” (432)",
-  "433":"V43 “Szili” (433)",
-  "448":"M44 “Bobó”",
-  "460":"V46",
-  "470":"Siemens Taurus",
-  "480":"Bombardier TRAXX",
-  "628":"M62 “Szergej”",
-  "630":"V63 “Gigant”",
-  "815":"Stadler KISS"
+const DEFAULT_CLASSES = {
+  "117":{name:"Bzmot",nickname:"Bézé"},
+  "415":{name:"Stadler FLIRT",nickname:""},
+  "416":{name:"Uzsgyi DMU",nickname:""},
+  "418":{name:"M41",nickname:"Csörgő"},
+  "426":{name:"Siemens Desiro",nickname:""},
+  "431":{name:"V43",nickname:"Szili"},
+  "432":{name:"V43 (432)",nickname:"Szili"},
+  "433":{name:"V43 (433)",nickname:"Szili"},
+  "448":{name:"M44",nickname:""},
+  "460":{name:"V46",nickname:""},
+  "470":{name:"Siemens Taurus",nickname:""},
+  "480":{name:"Bombardier TRAXX",nickname:""},
+  "628":{name:"M62",nickname:"Szergej"},
+  "630":{name:"V63",nickname:"Gigant"},
+  "815":{name:"Stadler KISS",nickname:""}
 };
 const KEY = "locolog.v1";
+const clone = o => JSON.parse(JSON.stringify(o));
 
 // ---------- storage ----------
-let state = {entries:[], types:{...DEFAULT_TYPES}, lastBackup:null};
+let state = {entries:[], classes:clone(DEFAULT_CLASSES), units:{}, routes:[], lastBackup:null};
 let storageOK = true;
 function load(){
   try{
     const raw = localStorage.getItem(KEY);
-    if(raw){
-      const d = JSON.parse(raw);
-      state.entries = Array.isArray(d.entries) ? d.entries : [];
-      state.types = d.types && typeof d.types==="object" ? d.types : {...DEFAULT_TYPES};
-      state.lastBackup = d.lastBackup || null;
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    state.entries = Array.isArray(d.entries) ? d.entries : [];
+    if(d.classes && typeof d.classes==="object") state.classes = d.classes;
+    else if(d.types && typeof d.types==="object"){ // v1 → v2
+      state.classes = {};
+      Object.keys(d.types).forEach(p=>state.classes[p] = (DEFAULT_CLASSES[p] ? clone(DEFAULT_CLASSES[p]) : {name:d.types[p],nickname:""}));
     }
+    state.units = d.units && typeof d.units==="object" ? d.units : {};
+    state.routes = Array.isArray(d.routes) ? d.routes : [];
+    state.lastBackup = d.lastBackup || null;
   }catch(e){ storageOK = false; }
 }
 function save(){
@@ -231,40 +331,39 @@ function save(){
 
 // ---------- helpers ----------
 const $ = id => document.getElementById(id);
-const digits = s => (s||"").replace(/\D/g,"");
+const digits = s => String(s||"").replace(/\D/g,"");
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function typeOf(num){
-  for(let len=4; len>=3; len--){
+function classOf(num){
+  for(let len=Math.min(8,num.length); len>=3; len--){
     const p = num.slice(0,len);
-    if(p.length===len && state.types[p]) return {prefix:p, name:state.types[p]};
+    if(state.classes[p]) return Object.assign({prefix:p}, state.classes[p]);
   }
-  return {prefix:num.slice(0,3), name:null};
+  return {prefix:num.slice(0,3), name:null, nickname:""};
 }
 function fmtNum(num){
   if(!num) return "";
-  const t = typeOf(num);
-  return t.prefix + (num.length>t.prefix.length ? " " + num.slice(t.prefix.length) : "");
+  const c = classOf(num);
+  const cut = (c.name && c.prefix.length<=4) ? c.prefix.length : 3;
+  return num.length>cut ? num.slice(0,cut)+" "+num.slice(cut) : num;
 }
-function typeLabel(num){
-  const t = typeOf(num);
-  return t.name || ("Unknown " + t.prefix);
-}
+function classLabel(c){ return c.name ? (c.nickname ? c.name+" “"+c.nickname+"”" : c.name) : "Unknown "+c.prefix; }
+const typeLabel = num => classLabel(classOf(num));
 function fmtTime(ts){
   const d = new Date(ts);
-  return d.toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"}) + " " +
+  return d.toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"})+" "+
          d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});
 }
-function countFor(num){ return state.entries.filter(e=>e.num===num).length; }
+const countFor = num => state.entries.filter(e=>e.num===num).length;
 let toastT;
 function toast(msg, bad){
-  const t=$("toast"); t.textContent=msg;
-  t.style.background = bad ? "var(--danger)" : "var(--ok)";
-  t.style.color = bad ? "#fff" : "#06210f";
-  t.classList.add("show"); clearTimeout(toastT);
-  toastT=setTimeout(()=>t.classList.remove("show"),1800);
+  const t=$("toast"); t.textContent=msg; t.classList.toggle("bad",!!bad);
+  t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2000);
 }
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
-const validLen = n => n.length>=6 && n.length<=8;
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const validNew = n => n.length>=6 && n.length<=8;
+const validEdit = n => n.length>=3 && n.length<=8;
+function whereOf(e){ return e.loc || (e.gps ? e.gps.lat.toFixed(4)+", "+e.gps.lon.toFixed(4) : ""); }
+function rememberRoute(r){ if(r && !state.routes.includes(r)) state.routes.push(r); }
 
 // ---------- nav ----------
 document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>{
@@ -272,21 +371,21 @@ document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on", v.id==="v-"+b.dataset.v));
   render(); window.scrollTo(0,0);
 }));
+function tick(){ const d=new Date(); $("clock").textContent=d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"}); }
+setInterval(tick,15000);
 
 // ---------- add form ----------
 let gps = null;
 function updateHint(){
-  const n = digits($("num").value);
-  const h = $("hint");
-  $("saveBtn").disabled = !validLen(n);
-  if(n.length<3){ h.innerHTML="&nbsp;"; return; }
-  const t = typeOf(n);
-  let html = t.name ? '<span class="t">'+esc(t.name)+'</span>' : '<span class="u">Unknown type '+esc(t.prefix)+' · add it in Types</span>';
-  if(validLen(n)){
-    const c = countFor(n);
-    html += c ? ' <span class="badge rep">seen '+c+'×</span>' : ' <span class="badge">new!</span>';
-  }else if(n.length>8){
-    html += ' <span class="u">· too many digits</span>';
+  const n = digits($("num").value), h=$("hint");
+  $("saveBtn").disabled = !validNew(n);
+  if(n.length<3){ h.innerHTML='<span class="u">Type the number from the cab</span>'; return; }
+  const c = classOf(n);
+  let html = c.name ? '<div class="t">'+esc(classLabel(c))+'</div>' : '<div class="u">Unknown class '+esc(c.prefix)+' · add it under Classes</div>';
+  if(validNew(n)){
+    const k = countFor(n), u = state.units[n];
+    html += '<div style="margin-top:4px">'+(k ? '<span class="tag">Seen '+k+'×</span>' : '<span class="tag ember">New unit</span>')+
+      (u && u.nickname ? '<span class="tag">'+esc(u.nickname)+'</span>' : '')+'</div>';
   }
   h.innerHTML = html;
 }
@@ -296,111 +395,124 @@ $("num").addEventListener("input", e=>{
   updateHint();
 });
 $("gpsBtn").addEventListener("click", ()=>{
-  if(!navigator.geolocation){ $("gpsInfo").textContent="GPS isn't available here — type the place instead."; return; }
+  if(!navigator.geolocation){ $("gpsInfo").textContent="GPS isn't available here. Type the place instead."; return; }
   $("gpsInfo").textContent="Getting position…";
   navigator.geolocation.getCurrentPosition(p=>{
-    gps = {lat:+p.coords.latitude.toFixed(5), lon:+p.coords.longitude.toFixed(5), acc:Math.round(p.coords.accuracy)};
-    $("gpsInfo").textContent = "📍 "+gps.lat+", "+gps.lon+" (±"+gps.acc+" m) will be saved";
+    gps = {lat:+p.coords.latitude.toFixed(6), lon:+p.coords.longitude.toFixed(6), acc:Math.round(p.coords.accuracy)};
+    $("gpsInfo").textContent = "GPS "+gps.lat.toFixed(5)+", "+gps.lon.toFixed(5)+" (±"+gps.acc+" m) will be saved";
   }, err=>{
     gps=null;
-    $("gpsInfo").textContent = "Couldn't get a position ("+(err.code===1?"permission denied":"no signal")+"). Type the place instead.";
+    $("gpsInfo").textContent = "No position ("+(err.code===1?"permission denied":"no signal")+"). Type the place instead.";
   }, {enableHighAccuracy:true, timeout:15000, maximumAge:60000});
 });
 $("addForm").addEventListener("submit", e=>{
   e.preventDefault();
   const n = digits($("num").value);
-  if(!validLen(n)) return;
-  const before = countFor(n);
-  state.entries.push({id:uid(), num:n, ts:Date.now(), loc:$("loc").value.trim(), gps, note:$("note").value.trim()});
-  save();
+  if(!validNew(n)) return;
+  const before = countFor(n), route=$("route").value.trim();
+  state.entries.push({id:uid(), num:n, ts:Date.now(), route, loc:$("loc").value.trim(), gps, note:$("note").value.trim()});
+  rememberRoute(route); save();
   try{ localStorage.setItem(KEY+".lastLoc", $("loc").value.trim()); }catch(_){}
-  toast(before ? fmtNum(n)+" · seen "+(before+1)+"×" : fmtNum(n)+" · new unit!");
-  $("num").value=""; $("note").value=""; gps=null; $("gpsInfo").textContent="";
+  toast(before ? fmtNum(n)+" · seen "+(before+1)+"×" : fmtNum(n)+" · new unit");
+  $("num").value=""; $("note").value=""; $("route").value=""; gps=null; $("gpsInfo").textContent="";
   updateHint(); render(); $("num").focus();
 });
 $("search").addEventListener("input", ()=>renderLog());
 
 // ---------- render ----------
-function render(){ renderLog(); renderStats(); renderTypes(); renderMore(); }
-
+function render(){ renderLog(); renderStats(); renderTypes(); renderMore(); renderRoutes(); }
+function renderRoutes(){
+  const set = new Set(state.routes); state.entries.forEach(e=>{ if(e.route) set.add(e.route); });
+  $("routeList").innerHTML = [...set].sort().map(r=>'<option value="'+esc(r)+'">').join("");
+}
 function renderLog(){
-  const q = $("search").value.trim().toLowerCase();
-  const qd = digits(q);
+  const q = $("search").value.trim().toLowerCase(), qd = digits(q);
   let list = state.entries.slice().sort((a,b)=>b.ts-a.ts);
   if(q){
-    list = list.filter(e => (qd && e.num.includes(qd)) || (e.loc||"").toLowerCase().includes(q) ||
-      (e.note||"").toLowerCase().includes(q) || typeLabel(e.num).toLowerCase().includes(q));
+    list = list.filter(e => (qd && e.num.includes(qd)) || [e.loc,e.note,e.route,typeLabel(e.num),(state.units[e.num]||{}).nickname]
+      .some(s=>(s||"").toLowerCase().includes(q)));
   }
   $("logTitle").textContent = q ? list.length+" match"+(list.length===1?"":"es") : "Recent";
-  if(!q) list = list.slice(0,100);
+  if(!q) list = list.slice(0,150);
   const counts = {}; state.entries.forEach(e=>counts[e.num]=(counts[e.num]||0)+1);
   $("logList").innerHTML = list.length ? list.map(e=>{
-    const c = counts[e.num];
-    const where = e.loc || (e.gps ? e.gps.lat+", "+e.gps.lon : "");
-    return '<div class="entry" data-id="'+e.id+'"><div class="n">'+esc(fmtNum(e.num))+'</div><div class="meta">'+
-      '<div>'+esc(typeLabel(e.num))+(c>1?' <span class="badge rep">'+c+'×</span>':'')+'</div>'+
-      '<div class="muted">'+esc(fmtTime(e.ts))+(where?' · '+esc(where):'')+'</div>'+
-      (e.note?'<div class="muted">'+esc(e.note)+'</div>':'')+'</div></div>';
-  }).join("") : '<div class="empty">'+(q?"No matches.":"No sightings yet. Type a number above to log your first one.")+'</div>';
+    const k = counts[e.num], u = state.units[e.num], w = whereOf(e);
+    return '<div class="entry" data-id="'+esc(e.id)+'"><div class="flap">'+esc(fmtNum(e.num))+'</div><div>'+
+      '<div class="ttl">'+esc(typeLabel(e.num))+(u&&u.nickname?'<span class="tag">'+esc(u.nickname)+'</span>':'')+(k>1?'<span class="tag ember">'+k+'×</span>':'')+'</div>'+
+      '<div class="sub">'+esc(fmtTime(e.ts))+(w?' · '+esc(w):'')+'</div>'+
+      (e.route?'<div class="sub" style="color:var(--brass-hi)">'+esc(e.route)+'</div>':'')+
+      (e.note?'<div class="note">'+esc(e.note)+'</div>':'')+'</div></div>';
+  }).join("") : '<div class="empty">'+(q?"No matches.":"No sightings yet. Type a number above to log your first.")+'</div>';
 }
-
 function renderStats(){
   const units = {};
   state.entries.forEach(e=>{
-    const u = units[e.num] || (units[e.num]={num:e.num,count:0,first:e.ts,last:e.ts});
-    u.count++; u.first=Math.min(u.first,e.ts); u.last=Math.max(u.last,e.ts);
+    const u = units[e.num] || (units[e.num]={num:e.num,count:0,last:0});
+    u.count++; u.last=Math.max(u.last,e.ts);
   });
   const groups = {};
   Object.values(units).forEach(u=>{
-    const t = typeOf(u.num); const key = t.name ? t.prefix : "?"+t.prefix;
-    const g = groups[key] || (groups[key]={label:t.name||("Unknown "+t.prefix), prefix:t.prefix, units:[], sightings:0});
+    const c = classOf(u.num), key = (c.name?"":"?")+c.prefix;
+    const g = groups[key] || (groups[key]={c, units:[], sightings:0});
     g.units.push(u); g.sightings+=u.count;
   });
-  const gl = Object.values(groups).sort((a,b)=>b.units.length-a.units.length || a.prefix.localeCompare(b.prefix));
+  const gl = Object.values(groups).sort((a,b)=>b.units.length-a.units.length || a.c.prefix.localeCompare(b.c.prefix));
   $("tSight").textContent = state.entries.length;
   $("tUnits").textContent = Object.keys(units).length;
   $("tTypes").textContent = gl.length;
+  const spec = (k,v)=> v ? '<li><span>'+k+'</span><span>'+esc(v)+'</span></li>' : '';
   $("byType").innerHTML = gl.length ? gl.map(g=>{
+    const c=g.c, fleet=+c.count||0, seen=g.units.length;
     g.units.sort((a,b)=>a.num.localeCompare(b.num));
-    return '<details><summary class="stat"><div><div>'+esc(g.label)+'</div><div class="muted">'+esc(g.prefix)+' · '+g.sightings+' sighting'+(g.sightings===1?'':'s')+'</div></div>'+
-      '<div class="big">'+g.units.length+'</div></summary><div class="units">'+
-      g.units.map(u=>'<span class="unit'+(u.count>1?' rep':'')+'">'+esc(fmtNum(u.num))+(u.count>1?' ×'+u.count:'')+'</span>').join("")+
+    return '<details><summary><div style="min-width:0;flex:1"><div class="nm">'+esc(c.nickname||c.name||("Unknown "+c.prefix))+'</div>'+
+      '<div class="cls">'+esc(c.prefix)+(c.nickname&&c.name?' · '+esc(c.name):'')+' · '+g.sightings+' sighting'+(g.sightings===1?'':'s')+'</div>'+
+      (fleet?'<div class="meter"><i style="width:'+Math.min(100,seen/fleet*100).toFixed(1)+'%"></i></div>':'')+'</div>'+
+      '<div class="ct">'+seen+(fleet?'<small> / '+fleet+'</small>':'')+'</div></summary><div class="panel">'+
+      '<ul class="specs">'+spec("Builder",c.builder)+spec("Era",c.era)+spec("Traction",c.traction)+spec("Top speed",c.topSpeed)+
+        spec("Heating",c.heating)+spec("Fleet",fleet?fleet+" units":"")+spec("Notes",c.notes)+'</ul>'+
+      '<div class="units">'+g.units.map(u=>'<span class="unit'+(u.count>1?' rep':'')+'">'+esc(fmtNum(u.num))+(u.count>1?' ×'+u.count:'')+'</span>').join("")+'</div>'+
       '</div></details>';
-  }).join("") : '<div class="empty">Stats appear after your first sighting.</div>';
+  }).join("") : '<div class="empty">Tally appears after your first sighting.</div>';
   const reps = Object.values(units).filter(u=>u.count>1).sort((a,b)=>b.count-a.count || b.last-a.last);
   $("repeats").innerHTML = reps.length ? reps.map(u=>
-    '<div class="stat"><div><div style="font:600 17px var(--mono)">'+esc(fmtNum(u.num))+'</div><div class="muted">'+esc(typeLabel(u.num))+
-    ' · last '+esc(fmtTime(u.last))+'</div></div><div class="big" style="color:var(--accent2)">×'+u.count+'</div></div>'
-  ).join("") : '<div class="empty">No repeats yet.</div>';
+    '<div class="rep-row"><div><span class="flap">'+esc(fmtNum(u.num))+'</span>'+
+    '<div class="muted" style="margin-top:6px">'+esc(typeLabel(u.num))+' · last '+esc(fmtTime(u.last))+'</div></div>'+
+    '<div class="x">×'+u.count+'</div></div>').join("") : '<div class="empty">No repeats yet.</div>';
 }
-
 function renderTypes(){
-  const keys = Object.keys(state.types).sort();
-  $("typeList").innerHTML = keys.length ? keys.map(p=>
-    '<div class="typerow"><span class="p">'+esc(p)+'</span><span class="nm">'+esc(state.types[p])+'</span>'+
-    '<button class="small" data-edit="'+esc(p)+'">Edit</button><button class="small danger" data-del="'+esc(p)+'">✕</button></div>'
-  ).join("") : '<div class="empty">No types.</div>';
+  const keys = Object.keys(state.classes).sort();
+  $("typeList").innerHTML = keys.length ? keys.map(p=>{
+    const c=state.classes[p];
+    return '<div class="cls-row"><span class="p">'+esc(p)+'</span><span class="n">'+esc(c.name)+(c.nickname?' “'+esc(c.nickname)+'”':'')+
+      (c.count?'<small>'+esc(c.count)+' built'+(c.era?' · '+esc(c.era):'')+'</small>':'')+'</span>'+
+      '<button class="btn ghost sm" data-edit="'+esc(p)+'">Edit</button><button class="btn danger sm" data-del="'+esc(p)+'">✕</button></div>';
+  }).join("") : '<div class="empty">No classes.</div>';
 }
 $("typeList").addEventListener("click", e=>{
   const ed = e.target.dataset.edit, del = e.target.dataset.del;
-  if(ed){ $("tPrefix").value=ed; $("tName").value=state.types[ed]; $("tName").focus(); }
+  if(ed){ const c=state.classes[ed]; $("tPrefix").value=ed; $("tName").value=c.name||""; $("tNick").value=c.nickname||""; $("tCount").value=c.count||""; window.scrollTo(0,0); $("tName").focus(); }
   if(del){
-    if(e.target.dataset.armed){ delete state.types[del]; save(); render(); toast("Removed "+del); }
+    if(e.target.dataset.armed){ delete state.classes[del]; save(); render(); toast("Removed "+del); }
     else { e.target.dataset.armed="1"; e.target.textContent="Sure?"; setTimeout(()=>{ if(e.target.isConnected){ delete e.target.dataset.armed; e.target.textContent="✕"; } },2500); }
   }
 });
 $("typeForm").addEventListener("submit", e=>{
   e.preventDefault();
   const p = digits($("tPrefix").value), n = $("tName").value.trim();
-  if(p.length<3 || p.length>4 || !n){ toast("Prefix must be 3–4 digits, with a name", true); return; }
-  state.types[p]=n; save(); $("tPrefix").value=""; $("tName").value=""; render(); updateHint(); toast("Saved "+p);
+  if(p.length<3 || !n){ toast("Prefix needs 3+ digits and a name", true); return; }
+  const c = state.classes[p] || {};
+  c.name=n; c.nickname=$("tNick").value.trim(); const cnt=digits($("tCount").value); c.count = cnt ? +cnt : (c.count||null);
+  state.classes[p]=c; save();
+  ["tPrefix","tName","tNick","tCount"].forEach(id=>$(id).value="");
+  render(); updateHint(); toast("Saved "+p);
 });
 $("resetTypes").addEventListener("click", e=>{
   const b=e.currentTarget;
-  if(b.dataset.armed){ state.types = {...state.types, ...DEFAULT_TYPES}; save(); render(); toast("Built-in types restored"); b.textContent="Restore built-in list"; delete b.dataset.armed; }
-  else { b.dataset.armed="1"; b.textContent="Tap again to restore (your custom types are kept)"; }
+  if(b.dataset.armed){
+    Object.keys(DEFAULT_CLASSES).forEach(p=>{ if(!state.classes[p]) state.classes[p]=clone(DEFAULT_CLASSES[p]); });
+    save(); render(); toast("Missing built-in classes restored"); b.textContent="Restore built-in classes"; delete b.dataset.armed;
+  } else { b.dataset.armed="1"; b.textContent="Tap again (adds back deleted ones only)"; }
 });
-
 function renderMore(){
   $("lastBackup").textContent = state.lastBackup ? "Last export: "+fmtTime(state.lastBackup) : "No backup exported yet.";
 }
@@ -410,9 +522,9 @@ let editing = null;
 function toLocalInput(ts){ const d=new Date(ts); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
 $("logList").addEventListener("click", e=>{
   const row = e.target.closest(".entry"); if(!row) return;
-  editing = state.entries.find(x=>x.id===row.dataset.id); if(!editing) return;
-  $("eNum").value=editing.num; $("eTime").value=toLocalInput(editing.ts);
-  $("eLoc").value=editing.loc||""; $("eNote").value=editing.note||"";
+  editing = state.entries.find(x=>String(x.id)===row.dataset.id); if(!editing) return;
+  $("eNum").value=editing.num; $("eTime").value=toLocalInput(editing.ts); $("eRoute").value=editing.route||"";
+  $("eLoc").value=editing.loc||""; $("eNote").value=editing.note||""; $("eNick").value=(state.units[editing.num]||{}).nickname||"";
   $("eDel").textContent="Delete"; delete $("eDel").dataset.armed;
   $("editSheet").classList.add("on");
 });
@@ -421,21 +533,24 @@ $("eCancel").addEventListener("click", closeSheet);
 $("editSheet").addEventListener("click", e=>{ if(e.target.id==="editSheet") closeSheet(); });
 $("eDel").addEventListener("click", e=>{
   const b=e.currentTarget;
-  if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="Tap to confirm"; return; }
+  if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="Confirm"; return; }
   state.entries = state.entries.filter(x=>x!==editing); save(); closeSheet(); render(); toast("Deleted");
 });
 $("editForm").addEventListener("submit", e=>{
   e.preventDefault();
   const n = digits($("eNum").value);
-  if(!validLen(n)){ toast("Number must be 6–8 digits", true); return; }
-  editing.num=n; editing.loc=$("eLoc").value.trim(); editing.note=$("eNote").value.trim();
+  if(!validEdit(n)){ toast("Number must be 3–8 digits", true); return; }
+  editing.num=n; editing.route=$("eRoute").value.trim(); editing.loc=$("eLoc").value.trim(); editing.note=$("eNote").value.trim();
   const t = new Date($("eTime").value).getTime(); if(!isNaN(t)) editing.ts=t;
-  save(); closeSheet(); render(); toast("Updated");
+  const nick=$("eNick").value.trim(), u=state.units[n]||{};
+  if(nick || u.nickname){ u.nickname=nick; state.units[n]=u; }
+  rememberRoute(editing.route); save(); closeSheet(); render(); toast("Updated");
 });
 
 // ---------- backup ----------
 $("exportBtn").addEventListener("click", async ()=>{
-  const data = JSON.stringify({app:"locolog",version:1,exported:new Date().toISOString(),entries:state.entries,types:state.types},null,1);
+  const data = JSON.stringify({app:"locolog",version:2,exported:new Date().toISOString(),
+    entries:state.entries,classes:state.classes,units:state.units,routes:state.routes},null,1);
   const name = "locolog-backup-"+new Date().toISOString().slice(0,10)+".json";
   let done=false;
   try{
@@ -451,51 +566,91 @@ $("exportBtn").addEventListener("click", async ()=>{
   if(done){ state.lastBackup=Date.now(); save(); renderMore(); toast("Backup exported"); }
   else toast("Export isn't possible here", true);
 });
+
+// Merge a parsed backup into state. Handles locolog (v1/v2) and the older loco-log format
+// ({units, encounters, classes, routes}). Returns counts for the summary toast.
+function importData(d){
+  const seen = new Set(state.entries.map(x=>x.num+"|"+x.ts));
+  const ids = new Set(state.entries.map(x=>String(x.id)));
+  let added=0, skipped=0, classesN=0, unitsN=0;
+  function addEntry(x){
+    const key = x.num+"|"+x.ts;
+    if(!x.num || !x.ts || seen.has(key) || ids.has(String(x.id))){ skipped++; return; }
+    seen.add(key); ids.add(String(x.id)); state.entries.push(x); rememberRoute(x.route); added++;
+  }
+  if(Array.isArray(d.encounters)){                       // older loco-log format
+    d.encounters.forEach(en=>{
+      const lat=en.lat, lon=en.lon;
+      addEntry({id:"ll-"+en.id+"-"+en.timestamp, num:digits(en.unitNumber), ts:+en.timestamp,
+        route:(en.route||"").trim(), loc:"", note:(en.note||"").trim(),
+        gps:(typeof lat==="number" && typeof lon==="number") ? {lat, lon, acc:null} : null});
+    });
+    (d.units||[]).forEach(u=>{
+      const n=digits(u.number); if(!n) return;
+      const cur=state.units[n]||{};
+      if(u.nickname && u.nickname!==cur.nickname){ cur.nickname=u.nickname; unitsN++; }
+      if(u.notes) cur.notes=u.notes;
+      if(cur.nickname||cur.notes) state.units[n]=cur;
+    });
+    (d.classes||[]).forEach(c=>{
+      const p=digits(c.prefix||c.code); if(p.length<3) return;
+      const cur=state.classes[p]||{};
+      state.classes[p]=Object.assign(cur,{name:c.name||cur.name||p, nickname:c.nickname||"",
+        builder:c.builder||"", era:c.era||"", traction:c.traction||"", topSpeed:c.topSpeed||"",
+        heating:c.heating||"", count:c.count||null, notes:c.notes||""});
+      classesN++;
+    });
+    (d.routes||[]).forEach(r=>rememberRoute(r && (r.label||r)));
+  } else if(Array.isArray(d.entries)){                   // locolog format
+    d.entries.forEach(x=>{ if(x) addEntry({id:x.id||uid(), num:digits(x.num), ts:+x.ts, route:x.route||"", loc:x.loc||"", gps:x.gps||null, note:x.note||""}); });
+    const cls = d.classes || (d.types ? Object.fromEntries(Object.entries(d.types).map(([p,n])=>[p,{name:n,nickname:""}])) : null);
+    if(cls){ Object.keys(cls).forEach(p=>{ state.classes[p]=Object.assign(state.classes[p]||{}, cls[p]); classesN++; }); }
+    if(d.units) Object.keys(d.units).forEach(n=>{ state.units[n]=Object.assign(state.units[n]||{}, d.units[n]); unitsN++; });
+    (d.routes||[]).forEach(rememberRoute);
+  } else throw new Error("unrecognised");
+  return {added, skipped, classesN, unitsN};
+}
 $("importFile").addEventListener("change", async e=>{
   const f = e.target.files[0]; if(!f) return;
   try{
-    const d = JSON.parse(await f.text());
-    if(!Array.isArray(d.entries)) throw 0;
-    const have = new Set(state.entries.map(x=>x.id)); let added=0;
-    d.entries.forEach(x=>{ if(x && x.num && x.ts && !have.has(x.id)){ state.entries.push({id:x.id||uid(),num:digits(x.num),ts:+x.ts,loc:x.loc||"",gps:x.gps||null,note:x.note||""}); added++; } });
-    if(d.types && typeof d.types==="object") state.types = {...state.types, ...d.types};
-    save(); render(); toast("Restored "+added+" sighting"+(added===1?"":"s"));
-  }catch(_){ toast("That file isn't a locolog backup", true); }
+    const r = importData(JSON.parse(await f.text()));
+    save(); render(); updateHint();
+    toast("Imported "+r.added+" sighting"+(r.added===1?"":"s")+(r.skipped?", "+r.skipped+" already here":"")+(r.classesN?", "+r.classesN+" classes":""));
+  }catch(_){ toast("That file isn't a backup locolog understands", true); }
   e.target.value="";
 });
 $("wipeBtn").addEventListener("click", e=>{
   const b=e.currentTarget;
-  if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="Tap again — this can't be undone"; return; }
+  if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="Tap again. This can't be undone"; return; }
   state.entries=[]; save(); render(); b.textContent="Delete all sightings"; delete b.dataset.armed; toast("All sightings deleted");
 });
+window.locologImport = importData; // used by tests
 
 async function storageStatus(){
   const parts=[];
-  if(!storageOK) parts.push("⚠️ This browser isn't letting locolog save data.");
+  if(!storageOK) parts.push("⚠ This browser isn't letting locolog save data.");
   const standalone = window.navigator.standalone || matchMedia("(display-mode: standalone)").matches;
-  parts.push(standalone ? "✅ Running as a home-screen app." : "ℹ️ Open from your home-screen icon for offline use (Share → Add to Home Screen).");
+  parts.push(standalone ? "● Running as a home-screen app" : "○ Open from your home-screen icon for offline use (Share → Add to Home Screen)");
   try{
     if(navigator.storage && navigator.storage.persist){
       const p = await navigator.storage.persist();
-      parts.push(p ? "✅ Storage marked persistent." : "Storage: standard (export backups regularly).");
+      parts.push(p ? "● Storage marked persistent" : "○ Standard storage. Export backups regularly");
     }
   }catch(_){}
   $("storageInfo").innerHTML = parts.map(esc).join("<br>");
 }
 
 // ---------- offline ----------
-function setOffline(msg){ $("offline").textContent=msg; }
+function setStatus(msg, on){ const s=$("status"); s.textContent=msg; s.classList.toggle("off",!on); }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("sw.js").then(reg=>{
-    return navigator.serviceWorker.ready.then(()=>setOffline("offline ready"));
-  }).catch(()=>setOffline("online only"));
-}else setOffline("online only");
-window.addEventListener("offline",()=>setOffline("offline · ok"));
+  navigator.serviceWorker.register("sw.js").then(()=>navigator.serviceWorker.ready).then(()=>setStatus("Offline Ready",true))
+    .catch(()=>setStatus("Online Only",false));
+} else setStatus("Online Only",false);
 
 // ---------- init ----------
 load();
 try{ const l=localStorage.getItem(KEY+".lastLoc"); if(l) $("loc").value=l; }catch(_){}
-render(); updateHint(); storageStatus();
+tick(); render(); updateHint(); storageStatus();
 })();
 </script>
 </body>
