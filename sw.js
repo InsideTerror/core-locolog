@@ -1,7 +1,8 @@
 // locolog service worker: keeps the whole app (and its fonts) on the phone so it opens with no connection.
-const CACHE = "locolog-v2";
+const CACHE = "locolog-v3";
+const PHOTO_CACHE = "locolog-photos";
 const FONT_CACHE = "locolog-fonts";
-const FILES = ["./", "./index.html", "./manifest.webmanifest", "./mark.png", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
+const FILES = ["./", "./index.html", "./manifest.webmanifest", "./mark.png", "./stations.json", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
@@ -10,7 +11,7 @@ self.addEventListener("install", e => {
 self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE && k !== FONT_CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE && k !== FONT_CACHE && k !== PHOTO_CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -27,6 +28,17 @@ self.addEventListener("fetch", e => {
         const net = fetch(req).then(res => { if (res.ok || res.type === "opaque") c.put(req, res.clone()); return res; });
         return hit || net.catch(() => Response.error());
       }))
+    );
+    return;
+  }
+
+  // Class photos and their Commons lookups: keep a copy so they show offline.
+  if (url.hostname === "upload.wikimedia.org" || url.hostname === "commons.wikimedia.org") {
+    e.respondWith(
+      caches.open(PHOTO_CACHE).then(c => c.match(req).then(hit => hit || fetch(req).then(res => {
+        if (res.ok) c.put(req, res.clone());
+        return res;
+      })))
     );
     return;
   }
