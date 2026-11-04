@@ -1,5 +1,5 @@
 // tramlog Lite service worker: keeps the app and its fonts on the phone so it opens with no connection.
-const CACHE = "tramlog-v1";
+const CACHE = "tramlog-v2";
 const FONT_CACHE = "tramlog-fonts";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./mark.png", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 

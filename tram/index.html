@@ -383,8 +383,8 @@ function renderStats(){
   $("byType").innerHTML = gl.length ? gl.map(g=>{
     const t=g.t, fleet=t&&+t.count||0, seen=g.units.length;
     g.units.sort((a,b)=>a.num.localeCompare(b.num));
-    return '<details><summary><div style="min-width:0;flex:1"><div class="nm">'+esc(t?(t.nickname||t.name):"Unknown")+'</div>'+
-      '<div class="cls">'+(t?esc(t.from+"–"+t.to)+(t.nickname?' · '+esc(t.name):''):'outside known ranges')+' · '+g.sightings+' sighting'+(g.sightings===1?'':'s')+'</div>'+
+    return '<details><summary><div style="min-width:0;flex:1"><div class="nm">'+esc(t?t.name:"Unknown")+'</div>'+
+      '<div class="cls">'+(t?esc(t.from+"–"+t.to)+(t.nickname?' · '+esc(t.nickname):''):'outside known ranges')+' · '+g.sightings+' sighting'+(g.sightings===1?'':'s')+'</div>'+
       (fleet?'<div class="meter"><i style="width:'+Math.min(100,seen/fleet*100).toFixed(1)+'%"></i></div>':'')+'</div>'+
       '<div class="ct">'+seen+(fleet?'<small> / '+fleet+'</small>':'')+'</div></summary><div class="panel"><div class="units">'+
       g.units.map(u=>'<span class="unit'+(u.count>1?' rep':'')+'">'+esc(u.num)+(u.count>1?' ×'+u.count:'')+'</span>').join("")+'</div></div></details>';
