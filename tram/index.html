@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>tramlog Lite — C.O.R.E.</title>
+<meta name="theme-color" content="#16161a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="tramlog">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Zilla+Slab:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" crossorigin>
+<style>
+/* C.O.R.E. design system, blue variant */
+:root{
+  --charcoal:#16161a; --slate:#201f22; --slate-2:#2a2930; --hairline:#3c3a3f;
+  --deep:#1d3f6e; --mid:#2f6fc0; --hi:#5a9cf0; --pale:#9cc4f5;
+  --paper:#ece6d8; --paper-dim:#b9b3a5; --steel:#8b8b8d; --ok:#6f8f5c;
+  --f-display:'Oswald','Arial Narrow',sans-serif;
+  --f-body:'Zilla Slab',Georgia,serif;
+  --f-mono:'IBM Plex Mono','Courier New',monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--charcoal);color:var(--paper);font-family:var(--f-body);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{padding:0 0 calc(70px + env(safe-area-inset-bottom))}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:radial-gradient(circle at 20% 20%,rgba(255,255,255,.025),transparent 40%),
+  radial-gradient(circle at 80% 60%,rgba(255,255,255,.02),transparent 45%),
+  repeating-linear-gradient(115deg,rgba(255,255,255,.012) 0 2px,transparent 2px 6px)}
+main,header{position:relative;z-index:1}
+header{position:sticky;top:0;z-index:20;background:rgba(22,22,26,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--hairline);padding-top:env(safe-area-inset-top)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:62px;padding:0 18px}
+.brand{display:flex;align-items:center;gap:11px}
+.brand img{width:34px;height:34px}
+.brand-text{font-family:var(--f-display);font-weight:700;letter-spacing:.16em;font-size:1.12rem;text-transform:uppercase;line-height:1.1}
+.brand-text span{color:var(--hi)}
+.brand-text small{font-size:.6rem;letter-spacing:.14em;color:var(--pale);border:1px solid var(--mid);border-radius:2px;padding:1px 5px;margin-left:7px;vertical-align:3px}
+.brand-sub{display:block;font-family:var(--f-mono);font-size:.58rem;letter-spacing:.1em;color:var(--steel);text-transform:uppercase}
+.live{font-family:var(--f-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--hi);display:flex;align-items:center;gap:7px}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 1.8s infinite}
+.live.off{color:var(--steel)}.live.off::before{animation:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(90,156,240,.55)}70%{box-shadow:0 0 0 8px rgba(90,156,240,0)}100%{box-shadow:0 0 0 0 rgba(90,156,240,0)}}
+
+main{padding:4px 16px 10px}
+.view{display:none}.view.on{display:block}
+.eyebrow{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--pale);display:flex;align-items:center;gap:.6em;margin:22px 0 10px}
+.eyebrow::before{content:"";width:22px;height:2px;background:var(--pale)}
+p{margin:0 0 1em;color:var(--paper-dim)}
+.card{background:var(--slate);border:1px solid var(--hairline);border-radius:3px;padding:18px}
+.board{background:var(--slate-2);border:1px solid var(--hairline);border-radius:4px;padding:16px 16px 18px}
+.board-head{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:.64rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--steel);padding-bottom:12px;margin-bottom:14px;border-bottom:1px dashed var(--hairline)}
+label{display:block;font-family:var(--f-mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin:14px 0 6px}
+input,textarea{width:100%;background:var(--charcoal);border:1px solid var(--hairline);color:var(--paper);padding:12px 13px;border-radius:2px;
+  font-family:var(--f-body);font-size:1rem;outline:none;-webkit-appearance:none}
+input:focus,textarea:focus{border-color:var(--hi)}
+input::placeholder,textarea::placeholder{color:#6d6a68}
+textarea{min-height:64px;resize:vertical}
+input[type=file]{padding:10px;font-family:var(--f-mono);font-size:.8rem}
+#num{font:600 2.3rem/1.1 var(--f-mono);letter-spacing:.3em;text-align:center;padding:16px 8px 16px calc(8px + .3em)}
+.hint{min-height:46px;text-align:center;margin-top:12px;font-family:var(--f-mono);font-size:.8rem}
+.hint .t{font-family:var(--f-display);font-size:1.15rem;letter-spacing:.06em;text-transform:uppercase;color:var(--pale)}
+.hint .u{color:var(--steel)}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:var(--f-display);font-size:.86rem;letter-spacing:.08em;
+  text-transform:uppercase;padding:13px 22px;border-radius:2px;border:1px solid var(--mid);background:var(--deep);color:var(--paper);cursor:pointer}
+.btn:active{background:var(--mid)}
+.btn:disabled{opacity:.45}
+.btn.ghost{background:transparent;border-color:var(--hairline)}
+.btn.danger{background:transparent;border-color:#c1502f;color:#e06a3e}
+.btn.sm{padding:9px 13px;font-size:.76rem}
+.btn.block{width:100%}
+.muted{color:var(--steel);font-family:var(--f-mono);font-size:.72rem;letter-spacing:.03em}
+.tag{display:inline-block;font-family:var(--f-mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;
+  border:1px solid var(--hairline);border-radius:2px;color:var(--pale);vertical-align:middle;margin-left:6px}
+.tag.hi{border-color:var(--mid);color:var(--hi)}
+/* quick line picker */
+.lines{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.lines button{font:500 .78rem var(--f-mono);background:var(--charcoal);color:var(--paper-dim);border:1px solid var(--hairline);border-radius:2px;padding:5px 9px}
+.lines button.on{border-color:var(--hi);color:var(--hi)}
+.entry{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;padding:12px 0;border-bottom:1px solid var(--hairline);cursor:pointer}
+.entry:last-child{border-bottom:0}
+.flap{font:600 1.05rem var(--f-mono);letter-spacing:.08em;background:var(--charcoal);border:1px solid var(--hairline);border-radius:2px;padding:5px 8px;white-space:nowrap;align-self:start}
+.line{display:inline-block;font:600 .72rem var(--f-mono);background:var(--mid);color:#fff;border-radius:2px;padding:1px 6px;margin-right:6px}
+.entry .ttl{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.04em;font-size:.98rem}
+.entry .sub{font-family:var(--f-mono);font-size:.7rem;color:var(--steel);margin-top:2px}
+.entry .note{font-size:.92rem;color:var(--paper-dim);margin-top:3px;white-space:pre-line}
+.again{font-family:var(--f-mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;background:transparent;color:var(--pale);
+  border:1px solid var(--hairline);border-radius:2px;padding:4px 8px;margin-top:7px;cursor:pointer}
+.empty{text-align:center;color:var(--steel);font-family:var(--f-mono);font-size:.78rem;padding:24px 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--hairline);border-radius:3px;background:var(--slate)}
+.stat{padding:16px 12px;border-right:1px solid var(--hairline)}
+.stat:last-child{border-right:0}
+.stat b{display:block;font-family:var(--f-display);font-size:1.9rem;color:var(--hi);font-weight:700;line-height:1.1}
+.stat span{font-family:var(--f-mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--steel)}
+.accordion{border-top:1px solid var(--hairline)}
+.accordion details{border-bottom:1px solid var(--hairline)}
+.accordion summary{cursor:pointer;list-style:none;padding:14px 2px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+.accordion summary::-webkit-details-marker{display:none}
+.accordion summary::after{content:"+";font-family:var(--f-mono);font-size:1.3rem;color:var(--hi);transition:transform .2s;flex-shrink:0}
+.accordion details[open] summary::after{transform:rotate(45deg)}
+.accordion .nm{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.04em;font-size:1rem}
+.accordion .cls{font-family:var(--f-mono);font-size:.66rem;color:var(--steel);letter-spacing:.06em;text-transform:uppercase}
+.accordion .ct{margin-left:auto;font-family:var(--f-display);font-weight:700;font-size:1.35rem;color:var(--hi);white-space:nowrap}
+.accordion .ct small{font-family:var(--f-mono);font-size:.68rem;color:var(--steel);font-weight:400}
+.meter{height:3px;background:var(--hairline);margin-top:7px;border-radius:2px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--hi)}
+.panel{padding:0 2px 16px}
+.units{display:flex;flex-wrap:wrap;gap:6px}
+.unit{font:500 .8rem var(--f-mono);padding:4px 8px;border-radius:2px;background:var(--charcoal);border:1px solid var(--hairline)}
+.unit.rep{border-color:var(--mid);color:var(--pale)}
+.rep-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--hairline)}
+.rep-row:last-child{border-bottom:0}
+.rep-row .x{font-family:var(--f-display);font-weight:700;font-size:1.5rem;color:var(--pale)}
+.cls-row{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--hairline)}
+.cls-row:last-child{border-bottom:0}
+.cls-row .p{font:600 .82rem var(--f-mono);min-width:86px;color:var(--pale)}
+.cls-row .n{flex:1;min-width:0;font-size:.95rem}
+.cls-row .n small{display:block;font-family:var(--f-mono);font-size:.66rem;color:var(--steel)}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;background:rgba(22,22,26,.96);border-top:1px solid var(--hairline);
+  padding-bottom:env(safe-area-inset-bottom);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+nav button{flex:1;background:none;border:0;border-top:2px solid transparent;color:var(--paper-dim);padding:10px 0 11px;font-family:var(--f-display);
+  font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-top:-1px}
+nav button.on{color:var(--hi);border-top-color:var(--hi)}
+nav button svg{display:block;margin:0 auto 4px;width:21px;height:21px}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:var(--slate-2);
+  border:1px solid var(--hi);color:var(--pale);font-family:var(--f-mono);font-size:.78rem;letter-spacing:.05em;padding:10px 16px;border-radius:2px;
+  opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+#toast.bad{border-color:#c1502f;color:#e06a3e}
+#toast.show{opacity:1}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;z-index:40}
+.sheet.on{display:flex}
+.sheet .box{background:var(--slate);border-top:1px solid var(--hi);width:100%;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="brand">
+      <img src="mark.png" alt="C.O.R.E. mark">
+      <span><span class="brand-text">Tram<span>log</span><small>Lite</small></span><span class="brand-sub">C.O.R.E. · Budapest Trams</span></span>
+    </div>
+    <span class="live off" id="status">Checking</span>
+  </div>
+</header>
+
+<main>
+<section class="view on" id="v-log">
+  <div class="eyebrow">New Sighting</div>
+  <form class="board" id="addForm" autocomplete="off">
+    <div class="board-head"><span>Fleet Number</span><span id="clock"></span></div>
+    <input id="num" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4271" aria-label="Tram fleet number">
+    <div class="hint" id="hint"></div>
+    <label for="line">Line</label>
+    <input id="line" inputmode="text" placeholder="e.g. 4, 6, 61, 19" maxlength="6">
+    <div class="lines" id="lineChips"></div>
+    <label for="loc">Stop / Location</label>
+    <div class="row">
+      <input id="loc" placeholder="e.g. Blaha Lujza tér">
+      <button type="button" id="gpsBtn" class="btn ghost sm" style="flex:0 0 auto">GPS</button>
+    </div>
+    <div class="muted" id="gpsInfo" style="margin-top:6px"></div>
+    <label for="note">Notes</label>
+    <textarea id="note" placeholder="Livery, coupled set, anything else…"></textarea>
+    <div class="muted" style="margin:10px 0 14px">Timestamp is recorded automatically.</div>
+    <button class="btn block" id="saveBtn" disabled>Log Sighting</button>
+  </form>
+  <div class="eyebrow" id="logTitle">Recent</div>
+  <input id="search" placeholder="Search number, type, line, stop…" style="margin-bottom:10px">
+  <div class="card" id="logList" style="padding:4px 16px"></div>
+</section>
+
+<section class="view" id="v-stats">
+  <div class="eyebrow">Tally</div>
+  <div class="stats">
+    <div class="stat"><b id="tSight">0</b><span>Sightings</span></div>
+    <div class="stat"><b id="tUnits">0</b><span>Trams</span></div>
+    <div class="stat"><b id="tTypes">0</b><span>Types</span></div>
+  </div>
+  <div class="eyebrow">By Type</div>
+  <div class="accordion" id="byType"></div>
+  <div class="eyebrow">Seen More Than Once</div>
+  <div class="card" id="repeats" style="padding:4px 16px"></div>
+</section>
+
+<section class="view" id="v-types">
+  <div class="eyebrow">Type Register</div>
+  <p style="font-size:.95rem">BKV trams carry a 4-digit fleet number. Each type is a number range; the narrowest matching range wins.</p>
+  <form class="board" id="typeForm" autocomplete="off">
+    <div class="board-head"><span>Add / Update Type</span></div>
+    <div class="row">
+      <input id="tFrom" inputmode="numeric" maxlength="4" placeholder="From" style="font-family:var(--f-mono)">
+      <input id="tTo" inputmode="numeric" maxlength="4" placeholder="To" style="font-family:var(--f-mono)">
+      <input id="tCount" inputmode="numeric" placeholder="Fleet" style="flex:0 0 80px">
+    </div>
+    <div class="row" style="margin-top:8px">
+      <input id="tName" placeholder="Name, e.g. CAF Urbos 3">
+      <input id="tNick" placeholder="Nickname">
+    </div>
+    <button class="btn block" style="margin-top:12px">Save Type</button>
+  </form>
+  <div class="card" id="typeList" style="padding:4px 16px;margin-top:14px"></div>
+  <button class="btn ghost sm" id="resetTypes" style="margin-top:12px">Restore built-in types</button>
+</section>
+
+<section class="view" id="v-more">
+  <div class="eyebrow">Backup</div>
+  <div class="card">
+    <p style="margin-top:0">Your log lives only on this phone, separate from locolog. Export a backup now and then.</p>
+    <button class="btn block" id="exportBtn">Export Backup</button>
+    <label for="importFile">Import a tramlog backup</label>
+    <input type="file" id="importFile" accept="application/json,.json">
+    <div class="muted" id="lastBackup" style="margin-top:10px"></div>
+  </div>
+  <div class="eyebrow">Status</div>
+  <div class="card muted" id="storageInfo" style="line-height:1.8">Checking…</div>
+  <div class="eyebrow">Danger Zone</div>
+  <div class="card"><button class="btn danger block" id="wipeBtn">Delete all sightings</button></div>
+  <p class="muted" style="text-align:center;margin-top:18px">tramlog Lite v1 · C.O.R.E. Railway Engineering</p>
+</section>
+</main>
+
+<nav>
+  <button data-v="log" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Log</button>
+  <button data-v="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Tally</button>
+  <button data-v="types"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2h6M12 2v4"/><rect x="5" y="6" width="14" height="12" rx="3"/><path d="M5 12h14M8 22l2-4M16 22l-2-4"/></svg>Types</button>
+  <button data-v="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Backup</button>
+</nav>
+<div id="toast"></div>
+
+<div class="sheet" id="editSheet">
+  <form class="box" id="editForm" autocomplete="off">
+    <div class="eyebrow" style="margin-top:0">Edit Sighting</div>
+    <div class="row">
+      <div><label>Number</label><input id="eNum" inputmode="numeric" maxlength="4" style="font-family:var(--f-mono)"></div>
+      <div style="flex:0 0 96px"><label>Line</label><input id="eLine"></div>
+    </div>
+    <label>Time</label><input id="eTime" type="datetime-local">
+    <label>Stop / Location</label><input id="eLoc">
+    <label>Notes</label><textarea id="eNote"></textarea>
+    <button type="button" class="btn ghost block sm" id="eAgain" style="margin-top:16px">Seen again here · log it now</button>
+    <div class="row" style="margin-top:10px">
+      <button type="button" class="btn danger sm" id="eDel">Delete</button>
+      <button type="button" class="btn ghost sm" id="eCancel">Cancel</button>
+      <button class="btn sm">Save</button>
+    </div>
+  </form>
+</div>
+
+<script>
+(function(){
+"use strict";
+// Fleet-number ranges in service on BKV's tram network.
+const DEFAULT_TYPES = [
+  {from:1300,to:1499,name:"Ganz articulated (CSMG / KCSV7)",nickname:"Csuklós",count:null},
+  {from:1500,to:1599,name:"Düwag TW 6000",nickname:"Hannoveri",count:null},
+  {from:1600,to:1699,name:"Düwag TW 6100",nickname:"Hannoveri",count:null},
+  {from:2001,to:2099,name:"Siemens Combino Supra",nickname:"Combino",count:40},
+  {from:2100,to:2199,name:"CAF Urbos 3 (long, CAF9)",nickname:"CAF",count:null},
+  {from:2200,to:2299,name:"CAF Urbos 3 (short, CAF5)",nickname:"CAF",count:null},
+  {from:4000,to:4349,name:"ČKD Tatra T5C5 / T5C5K",nickname:"Tátra",count:322}
+];
+const KEY = "tramlog.v1";
+const clone = o => JSON.parse(JSON.stringify(o));
+let state = {entries:[], types:clone(DEFAULT_TYPES), lastBackup:null};
+let storageOK = true;
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem(KEY)||"null"); if(!d) return;
+    state.entries = Array.isArray(d.entries) ? d.entries : [];
+    if(Array.isArray(d.types)) state.types = d.types;
+    state.lastBackup = d.lastBackup||null;
+  }catch(e){ storageOK=false; }
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ storageOK=false; toast("Couldn't save on this device", true); } }
+
+const $ = id => document.getElementById(id);
+const digits = s => String(s||"").replace(/\D/g,"");
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const valid = n => n.length===4;
+function typeOf(num){
+  const v = +num; let best=null;
+  state.types.forEach((t,i)=>{ if(v>=t.from && v<=t.to && (!best || (t.to-t.from) < (best.to-best.from))) best=Object.assign({i},t); });
+  return best;
+}
+const typeKey = t => t ? t.from+"-"+t.to : "?";
+const typeLabel = num => { const t=typeOf(num); return t ? t.name : "Unknown type"; };
+function fmtTime(ts){ const d=new Date(ts); return d.toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"})+" "+d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"}); }
+const countFor = n => state.entries.filter(e=>e.num===n).length;
+const whereOf = e => e.loc || (e.gps ? e.gps.lat.toFixed(4)+", "+e.gps.lon.toFixed(4) : "");
+const cleanLine = s => String(s||"").trim().toUpperCase();
+let toastT;
+function toast(msg,bad){ const t=$("toast"); t.textContent=msg; t.classList.toggle("bad",!!bad); t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2000); }
+
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on", v.id==="v-"+b.dataset.v));
+  render(); window.scrollTo(0,0);
+}));
+function tick(){ $("clock").textContent=new Date().toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"}); }
+setInterval(tick,15000);
+
+// ---------- add ----------
+let gps=null;
+function updateHint(){
+  const n=digits($("num").value), h=$("hint");
+  $("saveBtn").disabled = !valid(n);
+  if(n.length<2){ h.innerHTML='<span class="u">Type the 4-digit number on the tram</span>'; return; }
+  if(!valid(n)){ h.innerHTML='<span class="u">'+(4-n.length)+' more digit'+(n.length===3?'':'s')+'</span>'; return; }
+  const t=typeOf(n), k=countFor(n);
+  h.innerHTML = (t ? '<div class="t">'+esc(t.name)+'</div>' : '<div class="u">Unknown range · add it under Types</div>')+
+    '<div style="margin-top:4px">'+(k?'<span class="tag">Seen '+k+'×</span>':'<span class="tag hi">New tram</span>')+(t&&t.nickname?'<span class="tag">'+esc(t.nickname)+'</span>':'')+'</div>';
+}
+$("num").addEventListener("input", e=>{ e.target.value=digits(e.target.value).slice(0,4); updateHint(); });
+function renderLines(){
+  const freq={}; state.entries.forEach(e=>{ if(e.line) freq[e.line]=(freq[e.line]||0)+1; });
+  const top=Object.keys(freq).sort((a,b)=>freq[b]-freq[a]).slice(0,10);
+  const cur=cleanLine($("line").value);
+  $("lineChips").innerHTML = top.map(l=>'<button type="button" data-line="'+esc(l)+'"'+(l===cur?' class="on"':'')+'>'+esc(l)+'</button>').join("");
+}
+$("lineChips").addEventListener("click", e=>{ const l=e.target.dataset.line; if(l===undefined) return; $("line").value = cleanLine($("line").value)===l ? "" : l; renderLines(); });
+$("line").addEventListener("input", renderLines);
+$("gpsBtn").addEventListener("click", ()=>{
+  if(!navigator.geolocation){ $("gpsInfo").textContent="GPS isn't available here. Type the stop instead."; return; }
+  $("gpsInfo").textContent="Getting position…";
+  navigator.geolocation.getCurrentPosition(p=>{
+    gps={lat:+p.coords.latitude.toFixed(6), lon:+p.coords.longitude.toFixed(6), acc:Math.round(p.coords.accuracy)};
+    $("gpsInfo").textContent="GPS "+gps.lat.toFixed(5)+", "+gps.lon.toFixed(5)+" (±"+gps.acc+" m) will be saved";
+  }, err=>{ gps=null; $("gpsInfo").textContent="No position ("+(err.code===1?"permission denied":"no signal")+"). Type the stop instead."; },
+  {enableHighAccuracy:true, timeout:15000, maximumAge:60000});
+});
+$("addForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  const n=digits($("num").value); if(!valid(n)) return;
+  const before=countFor(n);
+  state.entries.push({id:uid(), num:n, ts:Date.now(), line:cleanLine($("line").value), loc:$("loc").value.trim(), gps, note:$("note").value.trim()});
+  save();
+  try{ localStorage.setItem(KEY+".last", JSON.stringify({loc:$("loc").value.trim(), line:cleanLine($("line").value)})); }catch(_){}
+  toast(before ? n+" · seen "+(before+1)+"×" : n+" · new tram");
+  $("num").value=""; $("note").value=""; gps=null; $("gpsInfo").textContent="";
+  updateHint(); render(); $("num").focus();
+});
+$("search").addEventListener("input", ()=>renderLog());
+function logAgain(src){
+  const before=countFor(src.num);
+  state.entries.push({id:uid(), num:src.num, ts:Date.now(), line:src.line||"", loc:src.loc||"", gps:src.gps||null, note:""});
+  save(); render(); updateHint(); toast(src.num+" · seen "+(before+1)+"×");
+}
+
+// ---------- render ----------
+function render(){ renderLog(); renderStats(); renderTypes(); renderLines();
+  $("lastBackup").textContent = state.lastBackup ? "Last export: "+fmtTime(state.lastBackup) : "No backup exported yet."; }
+function renderLog(){
+  const q=$("search").value.trim().toLowerCase(), qd=digits(q);
+  let list=state.entries.slice().sort((a,b)=>b.ts-a.ts);
+  if(q) list=list.filter(e=>(qd && e.num.includes(qd)) || [whereOf(e),e.note,typeLabel(e.num),"line "+(e.line||"").toLowerCase()].some(s=>(s||"").toLowerCase().includes(q)));
+  $("logTitle").textContent = q ? list.length+" match"+(list.length===1?"":"es") : "Recent";
+  if(!q) list=list.slice(0,150);
+  const counts={}; state.entries.forEach(e=>counts[e.num]=(counts[e.num]||0)+1);
+  $("logList").innerHTML = list.length ? list.map(e=>{
+    const k=counts[e.num], w=whereOf(e);
+    return '<div class="entry" data-id="'+esc(e.id)+'"><div class="flap">'+esc(e.num)+'</div><div>'+
+      '<div class="ttl">'+esc(typeLabel(e.num))+(k>1?'<span class="tag hi">'+k+'×</span>':'')+'</div>'+
+      '<div class="sub">'+(e.line?'<span class="line">'+esc(e.line)+'</span>':'')+esc(fmtTime(e.ts))+(w?' · '+esc(w):'')+'</div>'+
+      (e.note?'<div class="note">'+esc(e.note)+'</div>':'')+
+      '<button type="button" class="again" data-again="'+esc(e.id)+'">↻ Seen again here</button></div></div>';
+  }).join("") : '<div class="empty">'+(q?"No matches.":"No sightings yet. Type a fleet number above.")+'</div>';
+}
+function renderStats(){
+  const units={};
+  state.entries.forEach(e=>{ const u=units[e.num]||(units[e.num]={num:e.num,count:0,last:0,lines:{}}); u.count++; u.last=Math.max(u.last,e.ts); if(e.line) u.lines[e.line]=1; });
+  const groups={};
+  Object.values(units).forEach(u=>{ const t=typeOf(u.num), k=typeKey(t); const g=groups[k]||(groups[k]={t,units:[],sightings:0}); g.units.push(u); g.sightings+=u.count; });
+  const gl=Object.values(groups).sort((a,b)=>b.units.length-a.units.length);
+  $("tSight").textContent=state.entries.length; $("tUnits").textContent=Object.keys(units).length; $("tTypes").textContent=gl.length;
+  $("byType").innerHTML = gl.length ? gl.map(g=>{
+    const t=g.t, fleet=t&&+t.count||0, seen=g.units.length;
+    g.units.sort((a,b)=>a.num.localeCompare(b.num));
+    return '<details><summary><div style="min-width:0;flex:1"><div class="nm">'+esc(t?(t.nickname||t.name):"Unknown")+'</div>'+
+      '<div class="cls">'+(t?esc(t.from+"–"+t.to)+(t.nickname?' · '+esc(t.name):''):'outside known ranges')+' · '+g.sightings+' sighting'+(g.sightings===1?'':'s')+'</div>'+
+      (fleet?'<div class="meter"><i style="width:'+Math.min(100,seen/fleet*100).toFixed(1)+'%"></i></div>':'')+'</div>'+
+      '<div class="ct">'+seen+(fleet?'<small> / '+fleet+'</small>':'')+'</div></summary><div class="panel"><div class="units">'+
+      g.units.map(u=>'<span class="unit'+(u.count>1?' rep':'')+'">'+esc(u.num)+(u.count>1?' ×'+u.count:'')+'</span>').join("")+'</div></div></details>';
+  }).join("") : '<div class="empty">Tally appears after your first sighting.</div>';
+  const reps=Object.values(units).filter(u=>u.count>1).sort((a,b)=>b.count-a.count||b.last-a.last);
+  $("repeats").innerHTML = reps.length ? reps.map(u=>'<div class="rep-row"><div><span class="flap">'+esc(u.num)+'</span>'+
+    '<div class="muted" style="margin-top:6px">'+esc(typeLabel(u.num))+(Object.keys(u.lines).length?' · lines '+esc(Object.keys(u.lines).join(", ")):'')+' · last '+esc(fmtTime(u.last))+'</div></div>'+
+    '<div class="x">×'+u.count+'</div></div>').join("") : '<div class="empty">No repeats yet.</div>';
+}
+function renderTypes(){
+  const list=state.types.map((t,i)=>Object.assign({i},t)).sort((a,b)=>a.from-b.from);
+  $("typeList").innerHTML = list.length ? list.map(t=>'<div class="cls-row"><span class="p">'+t.from+'–'+t.to+'</span><span class="n">'+esc(t.name)+
+    (t.nickname?' “'+esc(t.nickname)+'”':'')+(t.count?'<small>'+t.count+' in fleet</small>':'')+'</span>'+
+    '<button class="btn ghost sm" data-edit="'+t.i+'">Edit</button><button class="btn danger sm" data-del="'+t.i+'">✕</button></div>').join("")
+    : '<div class="empty">No types.</div>';
+}
+let editingType=null;
+$("typeList").addEventListener("click", e=>{
+  const ed=e.target.dataset.edit, del=e.target.dataset.del;
+  if(ed!==undefined){ const t=state.types[+ed]; editingType=+ed; $("tFrom").value=t.from; $("tTo").value=t.to; $("tName").value=t.name; $("tNick").value=t.nickname||""; $("tCount").value=t.count||""; window.scrollTo(0,0); }
+  if(del!==undefined){
+    if(e.target.dataset.armed){ state.types.splice(+del,1); editingType=null; save(); render(); toast("Removed"); }
+    else { e.target.dataset.armed="1"; e.target.textContent="Sure?"; setTimeout(()=>{ if(e.target.isConnected){ delete e.target.dataset.armed; e.target.textContent="✕"; } },2500); }
+  }
+});
+$("typeForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  const from=+digits($("tFrom").value), to=+(digits($("tTo").value)||from), name=$("tName").value.trim();
+  if(!from || to<from || !name){ toast("Needs a range and a name", true); return; }
+  const t={from,to,name,nickname:$("tNick").value.trim(),count:+digits($("tCount").value)||null};
+  if(editingType!==null && state.types[editingType]) state.types[editingType]=t; else state.types.push(t);
+  editingType=null; save(); ["tFrom","tTo","tName","tNick","tCount"].forEach(id=>$(id).value=""); render(); updateHint(); toast("Saved "+from+"–"+to);
+});
+$("resetTypes").addEventListener("click", e=>{
+  const b=e.currentTarget;
+  if(b.dataset.armed){
+    DEFAULT_TYPES.forEach(d=>{ if(!state.types.some(t=>t.from===d.from&&t.to===d.to)) state.types.push(clone(d)); });
+    save(); render(); toast("Missing built-in types restored"); b.textContent="Restore built-in types"; delete b.dataset.armed;
+  } else { b.dataset.armed="1"; b.textContent="Tap again (adds back deleted ones only)"; }
+});
+
+// ---------- edit ----------
+let editing=null;
+function toLocalInput(ts){ const d=new Date(ts); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
+$("logList").addEventListener("click", e=>{
+  const ag=e.target.closest("[data-again]");
+  if(ag){ const s=state.entries.find(x=>String(x.id)===ag.dataset.again); if(s) logAgain(s); return; }
+  const row=e.target.closest(".entry"); if(!row) return;
+  editing=state.entries.find(x=>String(x.id)===row.dataset.id); if(!editing) return;
+  $("eNum").value=editing.num; $("eLine").value=editing.line||""; $("eTime").value=toLocalInput(editing.ts); $("eLoc").value=editing.loc||""; $("eNote").value=editing.note||"";
+  $("eDel").textContent="Delete"; delete $("eDel").dataset.armed; $("editSheet").classList.add("on");
+});
+function closeSheet(){ $("editSheet").classList.remove("on"); editing=null; }
+$("eCancel").addEventListener("click", closeSheet);
+$("editSheet").addEventListener("click", e=>{ if(e.target.id==="editSheet") closeSheet(); });
+$("eAgain").addEventListener("click", ()=>{ const s=editing; closeSheet(); if(s) logAgain(s); });
+$("eDel").addEventListener("click", e=>{
+  const b=e.currentTarget; if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="Confirm"; return; }
+  state.entries=state.entries.filter(x=>x!==editing); save(); closeSheet(); render(); toast("Deleted");
+});
+$("editForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  const n=digits($("eNum").value); if(!valid(n)){ toast("Number must be 4 digits", true); return; }
+  editing.num=n; editing.line=cleanLine($("eLine").value); editing.loc=$("eLoc").value.trim(); editing.note=$("eNote").value.trim();
+  const t=new Date($("eTime").value).getTime(); if(!isNaN(t)) editing.ts=t;
+  save(); closeSheet(); render(); toast("Updated");
+});
+
+// ---------- backup ----------
+$("exportBtn").addEventListener("click", async ()=>{
+  const data=JSON.stringify({app:"tramlog",version:1,exported:new Date().toISOString(),entries:state.entries,types:state.types},null,1);
+  const name="tramlog-backup-"+new Date().toISOString().slice(0,10)+".json"; let done=false;
+  try{ const f=new File([data],name,{type:"application/json"}); if(navigator.canShare&&navigator.canShare({files:[f]})){ await navigator.share({files:[f],title:name}); done=true; } }
+  catch(err){ if(err&&err.name==="AbortError") return; }
+  if(!done){ try{ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([data],{type:"application/json"})); a.download=name; document.body.appendChild(a); a.click(); a.remove(); done=true; }catch(_){} }
+  if(done){ state.lastBackup=Date.now(); save(); render(); toast("Backup exported"); } else toast("Export isn't possible here", true);
+});
+$("importFile").addEventListener("change", async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{
+    const d=JSON.parse(await f.text()); if(d.app!=="tramlog" || !Array.isArray(d.entries)) throw 0;
+    const seen=new Set(state.entries.map(x=>x.num+"|"+x.ts)); let added=0;
+    d.entries.forEach(x=>{ const n=digits(x.num); if(n && x.ts && !seen.has(n+"|"+x.ts)){ seen.add(n+"|"+x.ts); state.entries.push({id:x.id||uid(),num:n,ts:+x.ts,line:cleanLine(x.line),loc:x.loc||"",gps:x.gps||null,note:x.note||""}); added++; } });
+    if(Array.isArray(d.types)) d.types.forEach(t=>{ if(!state.types.some(s=>s.from===t.from&&s.to===t.to)) state.types.push(t); });
+    save(); render(); updateHint(); toast("Imported "+added+" sighting"+(added===1?"":"s"));
+  }catch(_){ toast("That isn't a tramlog backup", true); }
+  e.target.value="";
+});
+$("wipeBtn").addEventListener("click", e=>{
+  const b=e.currentTarget; if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="Tap again. This can't be undone"; return; }
+  state.entries=[]; save(); render(); b.textContent="Delete all sightings"; delete b.dataset.armed; toast("All sightings deleted");
+});
+async function storageStatus(){
+  const parts=[]; if(!storageOK) parts.push("⚠ This browser isn't letting tramlog save data.");
+  const standalone=window.navigator.standalone||matchMedia("(display-mode: standalone)").matches;
+  parts.push(standalone?"● Running as a home-screen app":"○ Open from your home-screen icon for offline use (Share → Add to Home Screen)");
+  try{ if(navigator.storage&&navigator.storage.persist){ const p=await navigator.storage.persist(); parts.push(p?"● Storage marked persistent":"○ Standard storage. Export backups regularly"); } }catch(_){}
+  $("storageInfo").innerHTML=parts.map(esc).join("<br>");
+}
+function setStatus(m,on){ const s=$("status"); s.textContent=m; s.classList.toggle("off",!on); }
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js",{scope:"./"}).then(()=>navigator.serviceWorker.ready).then(()=>setStatus("Offline Ready",true)).catch(()=>setStatus("Online Only",false));
+} else setStatus("Online Only",false);
+
+load();
+try{ const l=JSON.parse(localStorage.getItem(KEY+".last")||"{}"); if(l.loc) $("loc").value=l.loc; if(l.line) $("line").value=l.line; }catch(_){}
+tick(); render(); updateHint(); storageStatus();
+})();
+</script>
+</body>
+</html>
